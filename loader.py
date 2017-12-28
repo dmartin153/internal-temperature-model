@@ -60,6 +60,8 @@ def drop_bad_points(df):
     n_df = n_df.drop(n_df[n_df['WindDir_D1_WVT'] > 360].index)
     #Drop unnamed columns and extra timestamp
     n_df = n_df.drop(['Unnamed: 30', 'Unnamed: 31', 'Unnamed: 48', 'Unnamed: 50', 'TIMESTAMP.1'],axis=1)
+    #Drop rows with wind speed = 0
+    n_df = n_df.drop(n_df[n_df['WS_ms_S_WVT'] == 0].index)
     return n_df
 
 def set_timezones(df):
@@ -125,7 +127,7 @@ def main():
     print('Fixing Wind Data')
     add_true_wind_dir(master_df)
     print('saving to sql')
-    master_df.to_sql('clean_4', engine, if_exists='replace')
+    master_df.to_sql('clean', engine, if_exists='replace')
     print('done')
 
 if __name__ == '__main__':

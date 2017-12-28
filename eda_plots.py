@@ -5,6 +5,7 @@ import numpy as np
 import pdb
 import seaborn as sns
 import os
+import pytz
 
 def correlation_plots(df, x_col_name, y_col_name):
     '''This function makes scatter plots between the given columns, and provides
@@ -18,10 +19,10 @@ def correlation_plots(df, x_col_name, y_col_name):
     y = n_df[y_col_name].values
     saveloc = 'figures/correlation_plots/{}/'.format(x_col_name)
     check_dir(saveloc)
-    name = '{}_vs_{}'.format(x_col_name, y_col_name)
+    name = '{}_vs_{}'.format(y_col_name, x_col_name)
     corr = np.corrcoef(x, y)[0][1]
     fig = plt.figure()
-    plt.plot(x,y,'.',label='Correlation = {}'.format(corr))
+    plt.plot(x,y,'.',label='Correlation = {}'.format(corr), alpha=0.05)
     plt.xlabel(x_col_name)
     plt.ylabel(y_col_name)
     plt.title(name.replace('_', ' '))
@@ -40,3 +41,25 @@ def drop_nans(df, cols):
     dropping rows where there are no values'''
     n_df = df[cols].copy()
     return n_df.dropna()
+
+def daily_plot(df,col_name):
+    '''This function makes a plot with the course of each day plotted on top
+    of each other'''
+    if 'TIMESTAMP' in df.columns:
+        phoenix = pytz.timezone('America/Phoenix')
+        df['TIMESTAMP'] = df['TIMESTAMP'].apply(lambda x: x.tz_convert(phoenix))
+        time = df['TIMESTAMP'].apply(lambda x: x.time())
+    else:
+        time = df.index.time
+    val = df[col_name].copy().values
+    sns.set()
+    saveloc = 'figures/daily_plot/'
+    check_dir(saveloc)
+    name = '{}_vs_time'.format(col_name)
+    fig = plt.figure()
+    plt.plot(time,val,'.',alpha=0.01)
+    plt.xlabel('Time')
+    plt.ylabel(col_name)
+    plt.title(name.replace('_', ' '))
+    fig.savefig(saveloc+name+'.jpg')
+    plt.close(fig)
